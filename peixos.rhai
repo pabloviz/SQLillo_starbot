@@ -19,8 +19,9 @@ for w in 0..8 {
 
 
 
-let chaos=440;
+let chaos=450;
 let tiles=40;
+let extra=1;
 
 
 if "first" in memory == false{
@@ -33,20 +34,20 @@ if "first" in memory == false{
 	memory.previous_y = [-1, -2, -3, -4, -5, -6, -7, -8];
 
 	if memory.start_x > 25 && memory.start_y > 25 {
-		memory.even_limits=[tiles/2, tiles, tiles/2, tiles];
-		memory.odd_limits=[tiles/2, tiles, 0, tiles/2];
+		memory.even_limits=[tiles/2-extra, tiles, tiles/2, tiles];
+		memory.odd_limits=[tiles/2-extra, tiles, 0, tiles/2];
 		memory.quadrant=0;
 	}else if memory.start_x > 25 && memory.start_y < 25 {
-		memory.even_limits=[tiles/2, tiles, tiles/2, tiles];
-		memory.odd_limits=[tiles/2, tiles, 0, tiles/2];
+		memory.even_limits=[tiles/2-extra, tiles, tiles/2, tiles];
+		memory.odd_limits=[tiles/2-extra, tiles, 0, tiles/2];
 		memory.quadrant=1;
 	}else if memory.start_x < 25 && memory.start_y > 25 {
-		memory.even_limits=[0, tiles/2, tiles/2, tiles];
-		memory.odd_limits=[0, tiles/2, 0, tiles/2];
+		memory.even_limits=[0, tiles/2+extra, tiles/2, tiles];
+		memory.odd_limits=[0, tiles/2+extra, 0, tiles/2];
 		memory.quadrant=2;
 	}else{
-		memory.even_limits=[0, tiles/2, tiles/2, tiles];
-		memory.odd_limits=[0, tiles/2, 0, tiles/2];
+		memory.even_limits=[0, tiles/2+extra, tiles/2, tiles];
+		memory.odd_limits=[0, tiles/2+extra, 0, tiles/2];
 		memory.quadrant=3;
 	}	
 	memory.slash_y=[0,0,0,0,0,0,0,0];
@@ -66,7 +67,7 @@ let objectives_y = [-1, -2, -3, -4, -5, -6 , -7, -8];
 
 //score surround
 memory.ticks += 1;
-if memory.ticks % 200 == 0{
+if memory.ticks % 500 == 0{
 	for i in 1..8{
 		if memory.group[i]==0 {memory.group[i]=1;}
 		else {memory.group[i]=0;}
@@ -144,8 +145,8 @@ for w in 0..8 {
 	if w == 0{ //frontier reforcer
 		if lim[0] < memory.even_limits[0] {lim[0] = memory.even_limits[0];}
 		if lim[1] > memory.even_limits[1] {lim[1] = memory.even_limits[1];}
-		if lim[2] < 18 {lim[2] = 18;}
-		if lim[3] > 22 {lim[3] = 22;}		
+		if lim[2] < 17 {lim[2] = 17;}
+		if lim[3] > 23 {lim[3] = 23;}		
 	}else{
 		if memory.group[w] == 0{
 			if lim[0] < memory.even_limits[0] {lim[0] = memory.even_limits[0];}
@@ -171,7 +172,15 @@ for w in 0..8 {
 				temptative_score = 30;
 				out_of_options = 0;
 			}else if map[x][y] != color{
-				temptative_score = 40;
+				let isworker=0;
+				for worker in map.workers{
+					if worker.x == x && worker.y == y{
+						isworker=1;
+					}
+				}
+				if isworker==0 {
+				temptative_score = 30;
+				}
 				out_of_options = 0;
 /*
 			}else{
@@ -194,11 +203,11 @@ for w in 0..8 {
 			let distance_y = (y - w_y).abs();
 			//let totdist = (distance_x*distance_x + distance_y*distance_y);
 			let totdist = (distance_x + distance_y);
-			temptative_score -= totdist; //far away points are worse...but maybe not so much?
+			temptative_score -= (totdist*3)/2; //far away points are worse...but maybe not so much?
 
 			//dont repeat objectives!!!!
 			for i in 0..w{
-				if objectives_x[i] == x && objectives_y[i] == y {temptative_score-=10;}
+				if objectives_x[i] == x && objectives_y[i] == y {temptative_score-=15;}
 			}
 
 
@@ -207,16 +216,15 @@ for w in 0..8 {
 			if map[x][y] != color{
 			for x2 in x-1..x+2{
 				for y2 in y-1..y+2{
-					if x2 >= lim[0] && x2 < lim[1] && y2 >= lim[2] && y2 < lim[3]{
+					if x2 >= lim[0] && x2 < lim[1] && y2 >= lim[2] && y2 < lim[3] && (rand()%3)==0{
 						if map[x2][y2] == color{
 							cool_neigh+=1;
 						}
 					}
 				}
 			}
-			temptative_score+=cool_neigh*5;
+			temptative_score+=cool_neigh*1;
 			}
-
 
 
 			if temptative_score > objective_score{
